@@ -1,0 +1,55 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">DepLoom — woven D mark</title>
+  <desc id="desc">A luminous letter D built of a dependency loop and two interwoven threads, in blue, cyan and violet on midnight navy.</desc>
+  <defs>
+    <radialGradient id="bg" cx="39%" cy="25%" r="85%">
+      <stop offset="0%" stop-color="#1C2348"/>
+      <stop offset="52%" stop-color="#11182E"/>
+      <stop offset="100%" stop-color="#0A1020"/>
+    </radialGradient>
+    <linearGradient id="outer" x1="14%" y1="6%" x2="92%" y2="94%">
+      <stop offset="0%" stop-color="#A98FFF"/>
+      <stop offset="36%" stop-color="#647AFB"/>
+      <stop offset="72%" stop-color="#40C4EE"/>
+      <stop offset="100%" stop-color="#37EDCD"/>
+    </linearGradient>
+    <linearGradient id="warp" x1="0" y1="1" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#28C5F0"/>
+      <stop offset="100%" stop-color="#58F6C5"/>
+    </linearGradient>
+    <linearGradient id="weft" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#A685FC"/>
+      <stop offset="100%" stop-color="#7568FA"/>
+    </linearGradient>
+    <filter id="bloom" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="node-glow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <circle cx="256" cy="256" r="246" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="244" fill="none" stroke="#8C95F8" stroke-opacity=".13" stroke-width="2"/>
+  <circle cx="256" cy="256" r="218" fill="none" stroke="#99AFFF" stroke-opacity=".06" stroke-width="1.5"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".32" filter="url(#bloom)">
+    <path d="M177 146 V366 H241 C319 366 364 321 364 256 C364 191 319 146 241 146 H177" stroke="#558CFD" stroke-width="33"/>
+    <path d="M185 305 C232 302 284 207 340 205" stroke="#33E7D4" stroke-width="28"/>
+    <path d="M185 206 C230 212 286 307 340 308" stroke="#9276FF" stroke-width="28"/>
+  </g>
+  <!-- Loop D: the system's bounded dependency graph. -->
+  <path d="M177 146 V366 H241 C319 366 364 321 364 256 C364 191 319 146 241 146 H177"
+        fill="none" stroke="url(#outer)" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Warp: one upgrade path, passing beneath the violet weft. -->
+  <path d="M185 305 C232 302 284 207 340 205" fill="none" stroke="url(#warp)" stroke-width="20" stroke-linecap="round"/>
+  <!-- Small cut in the lower thread at the intersection, to show weaving. -->
+  <path d="M251 261 L265 245" stroke="#11182E" stroke-width="27" stroke-linecap="round" opacity=".97"/>
+  <!-- Weft: interlaced constraints. -->
+  <path d="M185 206 C230 212 286 307 340 308" fill="none" stroke="url(#weft)" stroke-width="20" stroke-linecap="round"/>
+  <!-- Terminal nodes evoke evaluated package versions, not decoration. -->
+  <circle cx="185" cy="206" r="10" fill="#B49BFF"/>
+  <circle cx="340" cy="308" r="10" fill="#8880FF"/>
+  <circle cx="185" cy="305" r="10" fill="#4ECFFA"/>
+  <circle cx="340" cy="205" r="10" fill="#54EACB"/>
+  <circle cx="340" cy="205" r="16" fill="#54EACB" opacity=".22" filter="url(#node-glow)"/>
+  <circle cx="340" cy="308" r="16" fill="#A98FFF" opacity=".22" filter="url(#node-glow)"/>
+</svg>
