@@ -1,0 +1,26 @@
+name: DepLoom P2.6 exact Core inventory hash check (no agents)
+on:
+  push:
+    branches: [eval/p25-wheel-raw-20261029]
+    paths: [.github/workflows/deploom-p26-core-hashes.yml]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: DepLoom/core
+          ref: c8c562ca582a4646865bb33ab81017382927a830
+          path: core
+          persist-credentials: false
+      - name: Exact source SHA-256 and revision
+        run: |
+          python - <<'PY'
+          import hashlib, pathlib, json
+          root=pathlib.Path('core')
+          for name in ('dependency_live_roadmap_generator.py','registry_candidate_diagnostics.py'):
+              print('CORE_P26_SHA256',name,hashlib.sha256((root/name).read_bytes()).hexdigest())
+          PY
