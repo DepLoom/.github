@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: DepLoom/mcp
-          ref: a4b7b2fab75b3af22599d1aeaaaefdb050ae90e6
+          ref: cdf6b0ab6ba824431f5c6e25853c829428eb313d
           path: mcp
           submodules: recursive
           persist-credentials: false
