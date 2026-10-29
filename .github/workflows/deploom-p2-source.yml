@@ -1,0 +1,42 @@
+name: DepLoom P2 temporary MCP source fixture
+on:
+  push:
+    branches: [eval/p2-mcp-source-20261029]
+    paths: [.github/workflows/deploom-p2-source.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact unchanged MCP commit and pinned Core
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: 71a6bc1da0c14a20c89147db24aaa4f87aeb3528
+          path: mcp
+          submodules: false
+          persist-credentials: false
+      - name: Record source provenance
+        run: |
+          mkdir -p evidence
+          git -C mcp rev-parse HEAD > evidence/MCPSHA.txt
+          (cd mcp && sha256sum src/deploom_mcp/blueprint.py src/deploom_mcp/server.py contracts/upgrade-blueprint.schema.json release-manifest.json) > evidence/original.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploom-p2-mcp-source
+          path: |
+            mcp/src/
+            mcp/tests/
+            mcp/contracts/
+            mcp/build_support.py
+            mcp/setup.py
+            mcp/pyproject.toml
+            mcp/release-manifest.json
+            mcp/scripts/smoke_stdio.py
+            mcp/scripts/smoke_wheel.py
+            mcp/scripts/update_release_manifest.py
+            evidence/
+          retention-days: 7
+          if-no-files-found: error
