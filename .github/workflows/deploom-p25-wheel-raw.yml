@@ -1,0 +1,54 @@
+name: DepLoom P2.5 pinned-wheel real stdio and OSV evidence
+on:
+  push:
+    branches:
+      - eval/p25-wheel-raw-20261029
+    paths:
+      - .github/workflows/deploom-p25-wheel-raw.yml
+      - benchmarks/p25/stdio_wheel_repin.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-wheel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout exact MCP repin commit and pinned Git submodule
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: a4b7b2fab75b3af22599d1aeaaaefdb050ae90e6
+          path: mcp
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Assert clean Core gitlink and hash-bound release inventory
+        run: |
+          python mcp/scripts/update_release_manifest.py --check
+          python mcp/scripts/check_skill.py
+      - name: Build and install a real wheel (NOT editable)
+        run: |
+          python -m pip install ./mcp
+          python - <<'PY'
+          import deploom_mcp
+          from pathlib import Path
+          location=Path(deploom_mcp.__file__).resolve()
+          assert not location.is_relative_to(Path("mcp").resolve()), location
+          print("independent installed wheel package:", location)
+          PY
+      - name: Real stdio RPC via installed wheel and external OSV over CONNECT proxy
+        run: python benchmarks/p25/stdio_wheel_repin.py --out evidence/p25 --draft-max-candidates 8
+      - name: Preserve raw RPC + OSV + full/compact Blueprint regardless of result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploom-p25-repin-installed-wheel-raw
+          path: evidence/p25/
+          retention-days: 7
+          if-no-files-found: warn
