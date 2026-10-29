@@ -1,0 +1,77 @@
+name: DepLoom D0 candidate-cap sweep (no agents)
+
+on:
+  push:
+    branches:
+      - eval/d0-raw-stdio-20261029
+    paths:
+      - .github/workflows/deploom-d0-cap-sweep.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cap-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: 71a6bc1da0c14a20c89147db24aaa4f87aeb3528
+          submodules: recursive
+          path: mcp
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install unchanged pinned MCP and Core
+        run: python -m pip install -e ./mcp
+      - name: Run bounded live stdio cases on public lodash only
+        shell: bash
+        run: |
+          mkdir -p evidence/cap-sweep
+          for cap in 1 3 8 16 32; do
+            echo "D0 candidate search cap: $cap"
+            python benchmarks/d0/stdio_d0.py --out "evidence/cap-sweep/cap-$cap" --draft-max-candidates "$cap" > "evidence/cap-sweep/log-cap-$cap.txt" 2>&1 || echo "CAP_FAILED_$cap" >> evidence/cap-sweep/failures.txt
+          done
+          python - <<'PY'
+          import json,pathlib,datetime
+          r=pathlib.Path('evidence/cap-sweep')
+          rows=[]
+          for cap in (1,3,8,16,32):
+              p=r/f'cap-{cap}'
+              result=json.loads((p/'D0-result.json').read_text()) if (p/'D0-result.json').exists() else {}
+              compact=json.loads((p/'compact-blueprint.json').read_text()) if (p/'compact-blueprint.json').exists() else {}
+              detail=json.loads((p/'full-blueprint.json').read_text()) if (p/'full-blueprint.json').exists() else {}
+              deps=detail.get('dependencies') or [{}]
+              rows.append({'capRequested':cap,'runStatus':result.get('status','NOT_RUN'),
+                           'planCapApplied':(compact.get('planningOptions') or {}).get('draftMaxCandidates'),
+                           'candidateCapScope':(compact.get('planningOptions') or {}).get('candidateCapScope'),
+                           'evidenceComplete':(compact.get('decisionCompleteness') or {}).get('evidenceComplete'),
+                           'decisionEvidenceCodes':[x.get('code') for x in compact.get('decisionEvidence') or []],
+                           'candidateSearchTruncated':(deps[0].get('evidence') or {}).get('candidateSearchTruncated'),
+                           'statusCounts':(detail.get('summary') or {}).get('statusCounts'),
+                           'target':deps[0].get('target'),
+                           'securityKnown':result.get('mcpSecurityKnown'),
+                           'securityTotal':result.get('mcpSecurityTotal'),
+                           'postPlanSecurityUnknown':result.get('postPlanSecurityUnknown'),
+                           'elapsedWallSeconds':result.get('wallSeconds')})
+          (r/'CAP_SWEEP_RESULTS.json').write_text(json.dumps({'status':'OBSERVATIONS_NOT_OPTIMALITY_PROOF',
+                'source':'real stdio MCP, identical public lodash fixture and pinned Core, independent live OSV for every cap',
+                'recordedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                'agentSessions':0,'rows':rows},indent=2)+'\n')
+          print(json.dumps(rows))
+          PY
+      - name: Upload raw evidence even if any candidate cap fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploom-d0-candidate-cap-sweep
+          path: evidence/cap-sweep/
+          retention-days: 7
+          if-no-files-found: warn
