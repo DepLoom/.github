@@ -159,7 +159,7 @@ def read_only_product_identity() -> dict[str, str]:
             "coreGeneratorSha256": sha(source.read_bytes())}
 
 
-def main(out: Path) -> int:
+def main(out: Path, candidate_cap: int = 3) -> int:
     out.mkdir(parents=True, exist_ok=False)
     started = time.monotonic()
     result = {"status": "D0_NOT_CONFIRMED", "startedUtc": datetime.now(timezone.utc).isoformat(),
@@ -215,7 +215,7 @@ def main(out: Path) -> int:
                         "min_lag_ok_pct": 80, "deadline_seconds": 90, "include_prerelease": False,
                         "use_system_proxy": True, "registry": "https://registry.npmjs.org",
                         "target_mode": "advisory", "objective": "latest-compatible-in-approved-lines",
-                        "mutable_packages": ["lodash"], "draft_max_candidates": 3,
+                        "mutable_packages": ["lodash"], "draft_max_candidates": candidate_cap,
                         "output_dir": str(out / "planner")}
                     rpc = client.request(3, "tools/call", {"name": "get_upgrade_plan", "arguments": args})
                     payload = selected_content(rpc)
@@ -279,5 +279,8 @@ def main(out: Path) -> int:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--draft-max-candidates", type=int, default=3)
     args = ap.parse_args()
-    raise SystemExit(main(args.out))
+    if not 1 <= args.draft_max_candidates <= 64:
+        raise SystemExit("draft_max_candidates must be 1..64 for D0 cap research")
+    raise SystemExit(main(args.out, args.draft_max_candidates))
