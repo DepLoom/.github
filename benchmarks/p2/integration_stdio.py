@@ -31,7 +31,7 @@ from benchmarks.d0.stdio_d0 import WireClient, selected_content  # noqa: E402
 sys.path.insert(0, str(ROOT / "mcp" / "scripts"))
 from smoke_live_proxy_osv import Proxy  # noqa: E402
 
-MCP_SHA = "922173f8ed06f9cbb342b349c435d17594a39de5"
+MCP_SHA = "041e4cb503163522008bcc0ab6b064246a7cf449"
 PINNED_CORE_SHA = "ba35b37c311fba13937ad4b2f46f760d57d9ab11"
 PARENT_CORE_SHA = "14cae77162478349a8de69db680ab656404daace"
 PR_CORE_SHA = "21f626ba8ad2e9f59b07fe14b3abbfb4420a3436"
