@@ -1,0 +1,36 @@
+name: DepLoom P2.6 regenerate exact repin inventory
+on:
+  push:
+    branches: [eval/p25-wheel-raw-20261029]
+    paths: [.github/workflows/deploom-p26-manifest.yml]
+permissions:
+  contents: read
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: fbeedd528b384a8913b123317ebbc30fec0c2b78
+          submodules: recursive
+          path: mcp
+          persist-credentials: false
+      - name: Recompute exact Core release inventory without commit
+        run: |
+          python mcp/scripts/update_release_manifest.py
+          python - <<'PY'
+          import json
+          d=json.load(open("mcp/release-manifest.json"))
+          print("P26_CORE",d["core"]["revision"])
+          print("P26_INVENTORY",d["core"]["contentSha256"],len(d["core"]["files"]))
+          print("P26_GENERATOR",d["core"]["files"]["dependency_live_roadmap_generator.py"])
+          print("P26_MODULE",d["core"]["files"]["registry_candidate_diagnostics.py"])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploom-p26-validated-release-manifest
+          path: mcp/release-manifest.json
+          retention-days: 7
+          if-no-files-found: error
