@@ -29,9 +29,9 @@ PINNED_MCP = SCRIPT_ROOT / "mcp"
 sys.path.insert(0, str(PINNED_MCP / "scripts"))
 from smoke_live_proxy_osv import Proxy  # type: ignore[import-not-found]  # noqa: E402
 
-MCP_SHA = "a4b7b2fab75b3af22599d1aeaaaefdb050ae90e6"
-CORE_SHA = "21f626ba8ad2e9f59b07fe14b3abbfb4420a3436"
-BUNDLE_BLOB_SHA = "05c00aade9781282128660c32812aceec16c55bd"
+MCP_SHA = "cdf6b0ab6ba824431f5c6e25853c829428eb313d"
+CORE_SHA = "0faa83f63b863f8ee47e4e6282a4f11c057824b5"
+BUNDLE_BLOB_SHA = "dd0d4f541f82c319c3392c371640ca793f9dd1c1"
 
 
 def sha(raw: bytes) -> str:
