@@ -1,0 +1,59 @@
+name: DepLoom P1.5 Core PR4 + real stdio MCP
+on:
+  push:
+    branches: [eval/p15-core-pr4-stdio-20261029]
+    paths:
+      - benchmarks/p15/**
+      - .github/workflows/deploom-p15-integration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: P1.5 unchanged MCP / Core parent-vs-PR + temporary projection
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Evaluation checkout (no product commits)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout existing MCP and pinned embedded Core
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: 71a6bc1da0c14a20c89147db24aaa4f87aeb3528
+          submodules: recursive
+          path: mcp
+          persist-credentials: false
+      - name: Checkout immediate parent of Core PR #4
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/core
+          ref: 14cae77162478349a8de69db680ab656404daace
+          path: core-parent
+          persist-credentials: false
+      - name: Checkout exact Core PR #4 head
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/core
+          ref: 21f626ba8ad2e9f59b07fe14b3abbfb4420a3436
+          path: core-pr
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install untouched pinned MCP from its normal checkout
+        run: python -m pip install -e ./mcp
+      - name: Run real JSON-RPC integration and synthetic artifact-origin fixtures
+        run: python benchmarks/p15/integration_stdio.py --out evidence/p15
+      - name: Upload all source hashes, raw RPC, Core plan, Blueprint and OSV observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploom-p15-core-pr4-real-mcp-integration
+          path: evidence/p15/
+          retention-days: 7
+          if-no-files-found: error
