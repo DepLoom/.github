@@ -1,0 +1,54 @@
+name: DepLoom D0 real stdio MCP + OSV (raw evidence)
+
+on:
+  push:
+    branches:
+      - eval/d0-raw-stdio-20261029
+    paths:
+      - benchmarks/d0/stdio_d0.py
+      - .github/workflows/deploom-d0-real.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  d0:
+    name: D0 pinned MCP/Core and live OSV via CONNECT proxy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout evaluation harness (never change Core/MCP)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact pinned product with submodule
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: 71a6bc1da0c14a20c89147db24aaa4f87aeb3528
+          submodules: recursive
+          path: mcp
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned MCP + embedded Core
+        run: python -m pip install -e ./mcp
+
+      - name: Real stdio JSON-RPC, real npm/OSV, verified proxy CONNECT
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python benchmarks/d0/stdio_d0.py --out evidence/d0
+
+      - name: Preserve raw JSON-RPC + OSV + Blueprint even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploom-d0-real-raw-evidence
+          path: evidence/d0/
+          retention-days: 7
+          if-no-files-found: error
