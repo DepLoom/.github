@@ -1,0 +1,56 @@
+name: DepLoom P2 MCP issue5 + Core PR4 real stdio integration
+on:
+  push:
+    branches: [eval/p2-mcp-stdio-20261029]
+    paths:
+      - benchmarks/p2/**
+      - .github/workflows/deploom-p2-stdio.yml
+permissions:
+  contents: read
+jobs:
+  integration:
+    name: P2 full+compact typed registry diagnostics, real stdio + OSV
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Fetch evaluation runner
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout exact MCP PR head, with old pinned Core intact
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/mcp
+          ref: 922173f8ed06f9cbb342b349c435d17594a39de5
+          path: mcp
+          submodules: recursive
+          persist-credentials: false
+      - name: Checkout unchanged Core PR parent
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/core
+          ref: 14cae77162478349a8de69db680ab656404daace
+          path: core-parent
+          persist-credentials: false
+      - name: Checkout exact Core PR #4 head out of tree (NO repin)
+        uses: actions/checkout@v4
+        with:
+          repository: DepLoom/core
+          ref: 21f626ba8ad2e9f59b07fe14b3abbfb4420a3436
+          path: core-pr
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install packaged MCP PR with its unchanged pinned Core
+        run: python -m pip install -e ./mcp
+      - name: Real stdio parent vs Core PR, matching/foreign/path/missing-dist, live OSV
+        run: python benchmarks/p2/integration_stdio.py --out evidence/p2
+      - name: Persist raw JSON-RPC, Core plan, Blueprint, OSV and source identity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploom-p2-mcp-pr6-real-stdio-evidence
+          path: evidence/p2/
+          if-no-files-found: error
+          retention-days: 7
